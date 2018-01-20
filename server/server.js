@@ -14,17 +14,15 @@ app.use(express.static(publicPath));
 io.on('connection', (socket) => {
   console.log('New user connected');
 
-  // Chat Event 1
-  socket.emit('newMessage', {
-    from: 'Boss',
-    text: 'Call me when you get back to the office',
-    createdAt: 123
-  })
-
-  // Listen for Chat requests from client
-  socket.on('createMessage', (newChatMsg) => {
-    console.log('createMessage', newChatMsg);
-  })
+  // Listener for Chat requests from client & Broadcast
+  socket.on('createMessage', (message) => {
+    console.log('createMessage', message);
+    io.emit('newMessage', {
+      from: message.from,
+      text: message.text,
+      createdAt: new Date().getTime()
+    });
+  });
 
   socket.on('disconnect', (socket) => {
     console.log('Client disconnected');
