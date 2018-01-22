@@ -4,6 +4,7 @@ const express = require('express');
 const socketIO = require('socket.io');
 
 const {generateMessage, generateLocationMessage} = require('./utils/message');
+const {isRealString} = require('./utils/validation');
 const publicPath = path.join(__dirname, '../public');
 const port = process.env.PORT || 3000;
 let app = express();
@@ -15,11 +16,29 @@ app.use(express.static(publicPath));
 io.on('connection', (socket) => {
   console.log('New user connected');
 
-  // socket.emit from Admin text Welcome to the chat app
-  socket.emit('newMessage', generateMessage('Admin', 'Welcome to the CMC chat app!'));
+  // Listener for joining a room
+  socket.on('join', (params, callback) => {
+    if (!isRealString(params.name) || !isRealString(params.room)) {
+      callback('Name and room name are required');
+    }
 
-  // socket.broadcast.emit   from Admin ... new user joined
-  socket.broadcast.emit('newMessage', generateMessage('Admin', 'New user has just joinded'));
+    socket.join(params.room);
+    // socket.leave('string');
+
+    // io.emit: sends to ALL users
+    // socket.broadcast.emit: sends to All but sending user
+    // socket.emit: sends to ONE users
+    
+    // io.emit -> io.to('room').emit: sends to all users connected to the room
+    // socket.broadcast.emit - socket.broadcast.to('room').emit : sends to all users connected to the room except the sending user
+
+    // socket.emit from Admin text Welcome to the chat app
+    socket.emit('newMessage', generateMessage('Admin', 'Welcome to the CMC chat app!'));
+    // socket.broadcast.emit   from Admin ... new user joined
+    socket.broadcast.to(params.room).emit('newMessage', generateMessage('Admin', `${params.name} has joined.`));
+    
+    callback();
+  });
 
   // Listener for Chat requests from client & Broadcast
   socket.on('createMessage', (message, callback) => {
