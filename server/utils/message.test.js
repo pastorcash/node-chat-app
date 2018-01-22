@@ -20,8 +20,8 @@ describe('generateLocationMessage', () => {
         let from = 'Admin';
         let latitude = 1;
         let longitude = 1;
-        let message = generateLocationMessage(from, latitude, longitude);
         let url = 'https://www.google.com/maps?q=1,1'
+        let message = generateLocationMessage(from, latitude, longitude);
 
         expect(message.createdAt).toBeA('number');
         expect(message).toInclude({from, url});
